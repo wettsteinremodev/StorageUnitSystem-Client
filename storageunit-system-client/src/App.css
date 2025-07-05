@@ -1,0 +1,395 @@
+/* App.css - app-specific styles */
+
+/* Logo styles */
+.logo {
+  height: 5rem;
+  padding: 1.5rem 0;
+  transition: filter 0.4s ease;
+  cursor: pointer;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 10px rgba(111, 66, 214, 0.6)); /* violet glow */
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 12px rgba(114, 74, 213, 0.8));
+}
+
+/* Logo spinning animation */
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 30s linear;
+  }
+}
+
+/* Card styling */
+.card {
+  background: white;
+  padding: 2.5rem 3rem;
+  margin: 2rem auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(111, 66, 214, 0.15);
+  max-width: 800px;
+  text-align: left;
+  color: #3b3a5a;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+/* Small card tweaks on small screens */
+@media (max-width: 600px) {
+  .card {
+    padding: 1.5rem 2rem;
+  }
+  .logo {
+    height: 4rem;
+  }
+}
+
+/* Storage Unit List Grid */
+.storage-unit-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px; /* fixed height per card */
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 1rem auto 0 auto;
+  width: 100%;
+  height: calc(2 * 200px + 1.5rem); /* height for exactly 2 rows */
+  overflow: auto; /* scroll if overflow */
+  padding-right: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* Storage Unit Card styles */
+.storage-unit-card {
+  background-color: #7070df;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(111, 66, 214, 0.2);
+  margin-top: 2%;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: none;
+  text-align: left;
+  transition: transform 0.2s ease;
+  cursor: default;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.storage-unit-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(111, 66, 214, 0.4);
+}
+
+/* Availability indicators */
+.availability-indicator {
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 8px;
+  color: white;
+  user-select: none;
+}
+
+.availability-indicator.available {
+  background-color: #4caf50; /* Green */
+}
+
+.availability-indicator.not-available {
+  background-color: #e53935; /* Red */
+}
+
+/* Navbar styles */
+.navbar-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.navbar-list {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  padding: 0;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.navbar-list li a {
+  color: #8a78ff;
+  text-decoration: none;
+  position: relative;
+  padding: 0.25rem 0;
+  transition: color 0.3s ease;
+}
+
+.navbar-list li a:hover {
+  color: #5d45e5;
+}
+
+.navbar-list li a.active,
+.navbar-list li a.active:hover {
+  color: #4c2ede;
+  font-weight: 700;
+}
+
+.navbar-list li a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #4c2ede;
+  transition: width 0.3s ease;
+}
+
+.navbar-list li a:hover::after,
+.navbar-list li a.active::after {
+  width: 100%;
+}
+
+/* Modal backdrop (full screen semi-transparent overlay) */
+.modal-backdrop {
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal content box */
+.modal-content {
+  background: #7070df;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Form container styling */
+.storage-unit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Form headings */
+.storage-unit-form h2 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #222;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* Form labels */
+.storage-unit-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+  color: #ffffff;
+}
+
+/* Form inputs (text and number) */
+.storage-unit-form input[type="text"],
+.storage-unit-form input[type="number"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.storage-unit-form input[type="text"]:focus,
+.storage-unit-form input[type="number"]:focus {
+  border-color: #4caf50;
+  outline: none;
+  box-shadow: 0 0 6px #4caf50aa;
+}
+
+/* Checkbox input */
+.storage-unit-form input[type="checkbox"] {
+  margin-top: 0.5rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Buttons container inside form */
+.storage-unit-form .buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Buttons styles */
+.storage-unit-form button {
+  cursor: pointer;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  transition: background-color 0.25s ease;
+}
+
+/* Submit button */
+.storage-unit-form button[type="submit"] {
+  background-color: #4caf50;
+  color: white;
+}
+
+.storage-unit-form button[type="submit"]:hover {
+  background-color: #429942;
+}
+
+/* Cancel / other button */
+.storage-unit-form button[type="button"] {
+  background-color: #f44336;
+  color: white;
+}
+
+.storage-unit-form button[type="button"]:hover {
+  background-color: #d4352b;
+}
+
+/* Wrapper to center and contain the form */
+.form-wrapper {
+  max-width: 450px;
+  margin: 0.5rem auto;
+  padding: 4rem;
+  background-color: #4c2ede;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Two-column layout container for tables and forms */
+.two-column-layout {
+  display: flex;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Left panel (e.g., tables, lists) */
+.left-panel {
+  background: #4c2ede;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(111, 66, 214, 0.1);
+  flex: 1;
+}
+
+/* Right panel (e.g., forms) */
+.right-panel {
+  background: #4c2ede;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(111, 66, 214, 0.15);
+  flex: 1;
+}
+
+/* ------------------ */
+/* RESPONSIVE STYLES */
+/* ------------------ */
+
+/* Small devices (smartphones) */
+@media (max-width: 768px) {
+  /* Stack two-column layout vertically */
+  .two-column-layout {
+    flex-direction: column;
+    padding: 0.5rem 1rem;
+    margin: 1rem auto;
+  }
+
+  /* Panels fill full width on small devices */
+  .left-panel,
+  .right-panel {
+    padding: 1rem;
+    box-shadow: none;
+    border-radius: 0;
+    background-color: transparent;
+    flex: none;
+    width: 100%;
+  }
+
+  /* Storage unit list: reduce columns to 2 */
+  .storage-unit-list {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 150px; /* smaller height */
+    height: auto; /* remove fixed height */
+    overflow: visible; /* avoid horizontal scroll */
+  }
+
+  /* Reduce form-wrapper padding */
+  .form-wrapper {
+    padding: 2rem 1rem;
+    max-width: 100%;
+  }
+
+  /* Adjust buttons container to wrap nicely */
+  .storage-unit-form .buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  /* Buttons full width on small screens */
+  .storage-unit-form button {
+    width: 100%;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .storage-unit-list {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;       /* allow variable height based on content */
+    height: auto;               /* remove fixed height */
+    overflow: visible;          /* no clipping */
+  }
+
+  .storage-unit-card {
+    min-height: 150px;          /* optional, sets a minimum height */
+    padding: 1rem;              /* adjust padding if needed */
+    white-space: normal;        /* allow text to wrap */
+    overflow-wrap: break-word;  /* break long words if necessary */
+  }
+}
+
+@media (max-width: 400px) {
+  .storage-unit-list {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;       /* again, allow content height */
+    height: auto;
+  }
+}
