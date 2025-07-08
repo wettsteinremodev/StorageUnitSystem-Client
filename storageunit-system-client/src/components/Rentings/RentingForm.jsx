@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import * as api from "../../api/api";
+import useNotify from "../Notification/useNotify";
 
-export default function RentingForm({ editingRenting, onClose }) {
+export default function RentingForm({ editingRenting, onClose, onSave }) {
   // Form state variables for user, storage unit, dates
   const [userId, setUserId] = useState("");
   const [storageUnitId, setStorageUnitId] = useState("");
@@ -11,6 +12,12 @@ export default function RentingForm({ editingRenting, onClose }) {
   // Dropdown lists for users and storage units
   const [users, setUsers] = useState([]);
   const [storageUnits, setStorageUnits] = useState([]);
+
+  // Tracking Validation ERRORS
+  const [errors, setErrors] = useState({});
+
+  // My Notify Alerts
+  const notify = useNotify();
 
   // Load users and storage units on component mount
   useEffect(() => {
@@ -40,7 +47,7 @@ export default function RentingForm({ editingRenting, onClose }) {
       const response = await api.fetchUsers();
       setUsers(response.data);
     } catch (error) {
-      alert("Failed to load users: " + error.message);
+      notify.error("Failed to load users: " + error.message);
     }
   }
 
@@ -50,8 +57,31 @@ export default function RentingForm({ editingRenting, onClose }) {
       const response = await api.fetchStorageUnits();
       setStorageUnits(response.data);
     } catch (error) {
-      alert("Failed to load storage units: " + error.message);
+      notify.error("Failed to load storage units: " + error.message);
     }
+  }
+
+  // Validation
+  function validate() {
+    const newErrors = {};
+
+    if (!userId) newErrors.userId = "User is required.";
+    if (!storageUnitId) newErrors.storageUnitId = "Storage unit is required.";
+    if (!startDate) newErrors.startDate = "Start date is required.";
+    if (!endDate) newErrors.endDate = "End date is required.";
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        newErrors.date = "Invalid date format.";
+      } else if (start > end) {
+        newErrors.date = "Start date must be before end date.";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
 
   // Handle form submission to create or update renting
@@ -59,48 +89,54 @@ export default function RentingForm({ editingRenting, onClose }) {
     e.preventDefault();
 
     // Basic validation of inputs
-    if (!userId || !storageUnitId || !startDate || !endDate) {
-      alert("Please fill in all fields.");
+    if (!validate()) {
+      notify.info("Please fix the validation errors.");
       return;
     }
 
     // Construct renting object matching backend format
     const rentingData = {
-      user: { id: userId },
-      storageUnit: { id: storageUnitId },
       startDate,
       endDate,
+      user: { id: Number(userId) },
+      storageUnit: { id: Number(storageUnitId) },
     };
 
     try {
       if (editingRenting) {
         // Update existing renting
         await api.updateRentings(editingRenting.id, rentingData);
-        alert("Renting updated successfully.");
+        notify.success("Renting updated successfully.");
       } else {
         // Create new renting
+        console.log("Renting Data to submit:", rentingData);
         await api.createRentings(rentingData);
-        alert("Renting created successfully.");
+        notify.success("Renting created successfully.");
       }
-      onClose(); // Close the form modal or panel after success
+
+      onSave(); // Trigger parent refresh
+
+      onClose(); // Trigger parent component to close form
     } catch (error) {
-      alert("Failed to save renting: " + error.message);
+      if (error.response && error.response.data) {
+        const errors = error.response.data;
+        const errorMessages = Object.values(errors).join("\n");
+        notify.error(errorMessages);
+      } else {
+        notify.error("Error saving renting: " + error.message);
+      }
     }
   }
 
   return (
-    <div className="form-wrapper">
+    <div>
       <h2>{editingRenting ? "Edit Renting" : "Add New Renting"}</h2>
 
       <form className="storage-unit-form" onSubmit={handleSubmit}>
         <div>
           <label>
-            User:{" "}
-            <select
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              required
-            >
+            User:
+            <select value={userId} onChange={(e) => setUserId(e.target.value)}>
               <option value="">Select user</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
@@ -109,19 +145,19 @@ export default function RentingForm({ editingRenting, onClose }) {
               ))}
             </select>
           </label>
+          {errors.userId && <p className="form-error">{errors.userId}</p>}
         </div>
 
         <div>
           <label>
-            Storage Unit:{" "}
+            Storage Unit:
             <select
               value={storageUnitId}
               onChange={(e) => setStorageUnitId(e.target.value)}
-              required
             >
               <option value="">Select storage unit</option>
               {storageUnits
-                .filter((unit) => unit.available) // Only show available units
+                .filter((unit) => unit.available)
                 .map((unit) => (
                   <option key={unit.id} value={unit.id}>
                     {unit.name} ({unit.sizeInM2} m²) - ${unit.pricePerMonth}
@@ -129,31 +165,36 @@ export default function RentingForm({ editingRenting, onClose }) {
                 ))}
             </select>
           </label>
+          {errors.storageUnitId && (
+            <p className="form-error">{errors.storageUnitId}</p>
+          )}
         </div>
 
         <div>
           <label>
-            Start Date:{" "}
+            Start Date:
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              required
             />
           </label>
+          {errors.startDate && <p className="form-error">{errors.startDate}</p>}
         </div>
 
         <div>
           <label>
-            End Date:{" "}
+            End Date:
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              required
             />
           </label>
+          {errors.endDate && <p className="form-error">{errors.endDate}</p>}
         </div>
+
+        {errors.date && <p className="form-error">{errors.date}</p>}
 
         <button type="submit">{editingRenting ? "Update" : "Create"}</button>
         <button type="button" onClick={onClose}>

@@ -7,28 +7,32 @@ import Impressum from "./pages/Impressum";
 import UserPage from "./pages/UserPage";
 import RentingPage from "./pages/RentingPage";
 import { Routes, Route } from "react-router-dom";
+// Notistack for my alerts
+import { SnackbarProvider } from "notistack";
 
 function App() {
   return (
-    <Routes>
-      {/* Main layout wrapper */}
-      <Route path="/" element={<Layout />}>
-        {/* Nested pages */}
-        <Route index element={<HomePage />} />
+    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+      <Routes>
+        {/* Main layout wrapper */}
+        <Route path="/" element={<Layout />}>
+          {/* Nested pages */}
+          <Route index element={<HomePage />} />
 
-        {/* <Route path="rentings" element={<Renting />} /> */}
-        <Route path="admin" element={<AdminPage />} />
+          {/* <Route path="rentings" element={<Renting />} /> */}
+          <Route path="admin" element={<AdminPage />} />
 
-        {/* <Route path="user" element={<User />} /> */}
-        <Route path="user" element={<UserPage />} />
+          {/* <Route path="user" element={<User />} /> */}
+          <Route path="user" element={<UserPage />} />
 
-        {/* <Route path="rentings" element={<User />} /> */}
-        <Route path="rentings" element={<RentingPage />} />
+          {/* <Route path="rentings" element={<User />} /> */}
+          <Route path="rentings" element={<RentingPage />} />
 
-        {/* <Route path="user" element={<User />} /> */}
-        <Route path="impressum" element={<Impressum />} />
-      </Route>
-    </Routes>
+          {/* <Route path="user" element={<User />} /> */}
+          <Route path="impressum" element={<Impressum />} />
+        </Route>
+      </Routes>
+    </SnackbarProvider>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // Not needed
 import StorageUnitList from "../components/StorageUnit/StorageUnitListHome";
 export default function Home() {
   return (

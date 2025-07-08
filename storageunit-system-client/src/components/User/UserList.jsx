@@ -1,43 +1,16 @@
-// src/components/Users/UserList.jsx
-
-import { useEffect, useState } from "react";
-import * as api from "../../api/api"; // API calls for users
+import useNotify from "../Notification/useNotify";
 
 // Component to display a list of users with Edit/Delete buttons
-export default function UserList({ onEdit }) {
-  // State to hold all users fetched from backend
-  const [users, setUsers] = useState([]);
+export default function UserList({ users, onEdit, onDelete }) {
+  const notify = useNotify();
 
-  // Fetch all users when component mounts
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  // Fetch users from backend API and update state
-  async function fetchUsers() {
-    try {
-      const response = await api.fetchUsers();
-      setUsers(response.data);
-    } catch (error) {
-      alert("Failed to load users: " + error.message);
-    }
-  }
-
-  // Delete user by id with confirmation and refresh list
-  async function handleDelete(id) {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-
-    try {
-      await api.deleteUser(id);
-      fetchUsers(); // Refresh after delete
-    } catch (error) {
-      alert("Failed to delete user: " + error.message);
-    }
-  }
+  // This is a controlled component: receives users and callbacks as props
 
   return (
     <div>
       <h2>All Users</h2>
+
+      {/* Show message if no users found */}
       {users.length === 0 ? (
         <p>No users found.</p>
       ) : (
@@ -56,11 +29,23 @@ export default function UserList({ onEdit }) {
                 <td>{user.userName}</td>
                 <td>{user.email}</td>
                 <td>
-                  {/* Edit button triggers onEdit with this user */}
+                  {/* Edit button calls onEdit with selected user */}
                   <button onClick={() => onEdit(user)}>Edit</button>
 
-                  {/* Delete button triggers delete */}
-                  <button onClick={() => handleDelete(user.id)}>Delete</button>
+                  {/* Delete button calls onDelete with user id, with confirmation */}
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to delete this user?"
+                        )
+                      ) {
+                        onDelete(user.id);
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
