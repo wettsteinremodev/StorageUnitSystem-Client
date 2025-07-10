@@ -115,7 +115,8 @@ export default function UserForm({ editingUser, onClose, onSave }) {
             <input
               type="text"
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Enter usernam"
+              onChange={(e) => setUserName(e.target.value) }
             />
           </label>
           {errors.userName && <p className="form-error">{errors.userName}</p>}
@@ -127,6 +128,7 @@ export default function UserForm({ editingUser, onClose, onSave }) {
             <input
               type="email"
               value={email}
+              placeholder="Enter email"
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
@@ -139,7 +141,7 @@ export default function UserForm({ editingUser, onClose, onSave }) {
             <input
               type="password"
               value={password}
-              placeholder={editingUser ? "Leave blank to keep current password" : ""}
+              placeholder="Enter password"
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
