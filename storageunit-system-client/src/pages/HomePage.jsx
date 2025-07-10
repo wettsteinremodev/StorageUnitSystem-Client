@@ -1,13 +1,20 @@
-import { useState, useEffect } from "react";
 import StorageUnitList from "../components/StorageUnit/StorageUnitListHome";
-export default function Home() {
+
+/**
+ * HomePage
+ * - Entry point for users to browse storage units
+ * - Allows users to click a unit to start renting
+ */
+export default function HomePage() {
   return (
     <div className="App">
       <h1>Homepage</h1>
       <hr />
       <p>Click on one of the Units to Create a Renting</p>
-      {/* Show list of storage units */}
+
+      {/* List of available storage units */}
       <StorageUnitList />
     </div>
   );
 }
+

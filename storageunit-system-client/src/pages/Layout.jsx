@@ -1,5 +1,6 @@
-import { Outlet } from "react-router-dom"; // This renders the current child route
+import { Outlet } from "react-router-dom"; //  renders current child route
 import Navigation from "./Navigation"; // Import the navigation bar
+
 
 // Layout wrapper that includes navigation + dynamic content
 export default function Layout() {
@@ -7,7 +8,7 @@ export default function Layout() {
     <div className="App">
       <header>
         {/* Navigation is shown on every page */}
-        <Navigation />
+        <Navigation className="navbar"/>
         <h4>Welcome to the Storage Unit Renting Site</h4>
         <hr />
       </header>
@@ -16,6 +17,9 @@ export default function Layout() {
       <main>
         <Outlet />
       </main>
+      <footer>
+
+      </footer>
     </div>
   );
 }

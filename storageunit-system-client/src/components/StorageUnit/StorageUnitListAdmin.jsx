@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react"; // Import hooks for state and lifecycle
-import { fetchStorageUnits } from "../../api/api"; // Import the API method to fetch storage units
-import StorageUnitForm from "./StorageUnitForm"; // Import the form component to edit/create units
+import { useState, useEffect } from "react";
+import { fetchStorageUnits, deleteStorageUnit } from "../../api/api"; // Fetch and delete API
+import StorageUnitForm from "./StorageUnitForm"; // Form for editing/creating
+import useNotify from "../Notification/useNotify"; // Toast notifications
 
-export default function StorageUnitList() {
+export default function StorageUnitListAdmin() {
   // State variable to store the list of storage units
   const [storageUnits, setStorageUnits] = useState([]);
 
@@ -10,76 +11,87 @@ export default function StorageUnitList() {
   const [loading, setLoading] = useState(true);
 
   // State variable to track which field to sort by
-  const [sortKey, setSortKey] = useState("name"); // Default sort by name
+  const [sortKey, setSortKey] = useState("name");
 
   // State variable to hold the currently editing storage unit (for modal)
   const [editingUnit, setEditingUnit] = useState(null);
 
-  // useEffect runs once when the component is mounted to fetch storage units
+  // My Notify Alerts
+  const notify = useNotify();
+
+  // Fetch all storage units when the component mounts
   useEffect(() => {
     fetchStorageUnits()
-      .then((response) => {
-        setStorageUnits(response.data); // Update the state with fetched data
-        setLoading(false); // Loading complete
+      .then((res) => {
+        setStorageUnits(res.data);
+        setLoading(false);
       })
-      .catch((error) => {
-        console.error("Error fetching storage units:", error);
+      .catch((err) => {
+        console.error("Error fetching storage units:", err);
+        notify.error("Failed to fetch storage units.");
         setLoading(false);
       });
-  }, []); // Empty dependency array means this runs only once on mount
+  }, []);
 
-  // Sort storageUnits array based on the current sortKey
+  // Sort units dynamically based on selected key
   const sortedUnits = [...storageUnits].sort((a, b) => {
-    if (sortKey === "name") {
-      return a.name.localeCompare(b.name);
-    } else if (sortKey === "price") {
-      return a.pricePerMonth - b.pricePerMonth;
-    } else if (sortKey === "size") {
-      return a.sizeInM2 - b.sizeInM2;
-    } else if (sortKey === "availability") {
-      // Sort so available units come first
-      return b.available === a.available ? 0 : b.available ? 1 : -1;
+    switch (sortKey) {
+      case "name":
+        return a.name.localeCompare(b.name);
+      case "price":
+        return a.pricePerMonth - b.pricePerMonth;
+      case "size":
+        return a.sizeInM2 - b.sizeInM2;
+      case "availability":
+        return b.available === a.available ? 0 : b.available ? 1 : -1;
+      default:
+        return 0;
     }
-    return 0;
   });
 
-  // Show loading message while fetching data
-  if (loading) {
-    return <p>Loading storage units...</p>;
-  }
-
-  // Show message if there are no storage units available
-  if (storageUnits.length === 0) {
-    return <p>No storage units available.</p>;
-  }
-
-  // Handle clicking a storage unit card to open the edit form modal
-  function handleCardClick(unit) {
-    setEditingUnit(unit);
-  }
-
-  // Refresh the storage units list from the backend (called after saving changes)
+  // Refresh the list after create/update/delete
   async function refreshList() {
     try {
       const response = await fetchStorageUnits();
       setStorageUnits(response.data);
-      setEditingUnit(null); // Close the modal after refreshing
+      setEditingUnit(null);
     } catch (err) {
-      alert("Failed to refresh storage units: " + err.message);
+      notify.error("Failed to refresh storage units.");
     }
   }
 
-  // Close the editing modal without refreshing
+  // Trigger edit modal
+  function handleEdit(unit) {
+    setEditingUnit(unit);
+  }
+
+  // Handle delete with confirmation
+  async function handleDelete(id) {
+    if (!window.confirm("Are you sure you want to delete this unit?")) return;
+
+    try {
+      await deleteStorageUnit(id);
+      notify.success("Deleted successfully.");
+      refreshList();
+    } catch (err) {
+      notify.error("Failed to delete unit.");
+    }
+  }
+
+  // Handle modal close
   function handleClose() {
     setEditingUnit(null);
   }
 
-  // Render the main list with sorting dropdown and cards
+  // Render loading or empty state
+  if (loading) return <p>Loading storage units...</p>;
+  if (!storageUnits.length) return <p>No storage units available.</p>;
+
   return (
     <div>
-      <h2>Storage Units</h2>
+      <h2>Admin Storage Unit Management</h2>
 
-      {/* Sorting dropdown */}
+      {/* Sort dropdown */}
       <label htmlFor="sort-select" style={{ marginRight: "0.5rem" }}>
         Sort by:
       </label>
@@ -101,8 +113,15 @@ export default function StorageUnitList() {
           <div
             key={unit.id}
             className="storage-unit-card"
-            onClick={() => handleCardClick(unit)} // Open modal on click
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "default",
+              position: "relative",
+              padding: "1rem",
+              border: "1px solid #ccc",
+              borderRadius: "10px",
+              marginBottom: "1rem",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+            }}
           >
             <strong>{unit.name}</strong>
             <p>Size: {unit.sizeInM2} m²</p>
@@ -118,21 +137,24 @@ export default function StorageUnitList() {
                 {unit.available ? "Available" : "Not Available"}
               </span>
             </p>
+
+            {/* Edit & Delete buttons */}
+            <div style={{ marginTop: "1rem" }}>
+              <button onClick={() => handleEdit(unit)}>Edit</button>
+              <button onClick={() => handleDelete(unit.id)}>Delete</button>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Modal popup for editing the storage unit */}
+      {/* Modal for edit/create */}
       {editingUnit && (
         <div className="modal-backdrop">
           <div className="modal-content">
-            {/* StorageUnitForm handles editing and updating */}
             <StorageUnitForm
               editingUnit={editingUnit}
-              onClose={() => {
-                handleClose(); // Close modal
-                refreshList(); // Refresh list after saving changes
-              }}
+              onClose={handleClose}
+              onSave={refreshList}
             />
           </div>
         </div>

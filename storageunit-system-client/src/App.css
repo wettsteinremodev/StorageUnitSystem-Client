@@ -218,6 +218,10 @@
 
 /* Form inputs (text and number) */
 .storage-unit-form input[type="text"],
+.storage-unit-form input[type="date"],
+.storage-unit-form input[type="email"],
+.storage-unit-form input[type="password"],
+.storage-unit-form select,
 .storage-unit-form input[type="number"] {
   padding: 0.5rem;
   font-size: 1rem;
@@ -304,6 +308,7 @@
 /* Left panel (e.g., tables, lists) */
 .left-panel {
   background: #4c2ede;
+  height: fit-content;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(111, 66, 214, 0.1);
@@ -313,6 +318,7 @@
 /* Right panel (e.g., forms) */
 .right-panel {
   background: #4c2ede;
+  height: fit-content;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(111, 66, 214, 0.15);

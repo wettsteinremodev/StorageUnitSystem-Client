@@ -1,57 +1,20 @@
-import { useState, useEffect } from "react";
-import * as api from "../../api/api";
+import useNotify from "../Notification/useNotify";
 
-export default function RentingList({ onEdit }) {
-  // State variable to hold the list of rentings fetched from backend
-  const [rentings, setRentings] = useState([]);
+// Component to display a list of rentings with Edit/Delete buttons
+export default function RentingList({ rentings, onEdit, onDelete }) {
+  // Notification hook for error or success messages
+  const notify = useNotify();
 
-  // useEffect to fetch rentings when component mounts
-  useEffect(() => {
-    fetchRentingsFromAPI();
-  }, []);
-
-  // Function to fetch all rentings from the backend API
-  async function fetchRentingsFromAPI() {
-    try {
-      // Call your API method to get rentings
-      const response = await api.fetchRentings();
-
-      // Axios response object has actual data in .data property
-      setRentings(response.data);
-    } catch (error) {
-      // Show alert on failure to load rentings
-      alert("Failed to fetch rentings: " + error.message);
-    }
-  }
-
-  // Function to delete a renting by ID, with confirmation dialog
-  async function handleDelete(id) {
-    // Confirm with the user before deleting
-    if (!window.confirm("Are you sure you want to delete this renting?")) {
-      return; // Exit if user cancels
-    }
-
-    try {
-      // Call your API method to delete renting
-      await api.deleteRentings(id);
-
-      // Reload the list of rentings after successful deletion
-      fetchRentingsFromAPI();
-    } catch (error) {
-      // Show alert on failure to delete renting
-      alert("Failed to delete renting: " + error.message);
-    }
-  }
+  // This component is controlled by props; does not fetch its own data
 
   return (
     <div>
       <h2>All Rentings</h2>
 
-      {/* Display message if there are no rentings */}
+      {/* Show message if no rentings are found */}
       {rentings.length === 0 ? (
         <p>No rentings found.</p>
       ) : (
-        // Render a table showing all rentings
         <table border="1" cellPadding="5">
           <thead>
             <tr>
@@ -64,26 +27,24 @@ export default function RentingList({ onEdit }) {
           </thead>
 
           <tbody>
-            {/* Map each renting to a table row */}
             {rentings.map((renting) => (
               <tr key={renting.id}>
-                {/* Show the user's username */}
+                {/* Display related user and storage unit names */}
                 <td>{renting.user.userName}</td>
-
-                {/* Show the name of the rented storage unit */}
                 <td>{renting.storageUnit.name}</td>
-
-                {/* Show start and end dates */}
                 <td>{renting.startDate}</td>
                 <td>{renting.endDate}</td>
 
-                {/* Actions: Edit and Delete */}
                 <td>
-                  {/* Edit button calls onEdit callback passed from parent */}
+                  {/* Edit button triggers edit callback */}
                   <button onClick={() => onEdit(renting)}>Edit</button>
 
-                  {/* Delete button triggers handleDelete */}
-                  <button onClick={() => handleDelete(renting.id)}>
+                  {/* Delete button triggers delete callback with confirmation */}
+                  <button
+                    onClick={() => {                    
+                        onDelete(renting.id);
+                    }}
+                  >
                     Delete
                   </button>
                 </td>
