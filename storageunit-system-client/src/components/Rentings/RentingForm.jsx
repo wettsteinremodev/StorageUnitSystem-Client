@@ -81,7 +81,7 @@ export default function RentingForm({ editingRenting, onClose, onSave }) {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors; // ✅ Return the error object itself
   }
 
   // Handle form submission to create or update renting
@@ -89,8 +89,10 @@ export default function RentingForm({ editingRenting, onClose, onSave }) {
     e.preventDefault();
 
     // Basic validation of inputs
-    if (!validate()) {
-      notify.info("Please fix the validation errors.");
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      const errorMessages = Object.values(validationErrors).join("\n");
+      notify.info("Please fix the validation errors:\n" + errorMessages);
       return;
     }
 

@@ -49,7 +49,7 @@ export default function StorageUnitForm({
   function validate() {
     const newErrors = {};
 
-    if (!name.trim()) {
+    if (!name) {
       newErrors.name = "Name is required.";
     } else if (name.length < 2 || name.length > 20) {
       newErrors.name = "Name must be between 2 and 20 characters.";
