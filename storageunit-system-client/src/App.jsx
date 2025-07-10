@@ -1,34 +1,39 @@
 import "./App.css";
-// import Renting from "./pages/RentingPage";
-import HomePage from "./pages/HomePage";
-import AdminPage from "./pages/AdminPage";
-import Layout from "./pages/Layout";
-import Impressum from "./pages/Impressum";
-import UserPage from "./pages/UserPage";
-import RentingPage from "./pages/RentingPage";
 import { Routes, Route } from "react-router-dom";
-// Notistack for my alerts
 import { SnackbarProvider } from "notistack";
 
+// Layout and page components
+import Layout from "./pages/Layout";
+import HomePage from "./pages/HomePage";
+import AdminPage from "./pages/AdminPage";
+import UserPage from "./pages/UserPage";
+import RentingPage from "./pages/RentingPage";
+import Impressum from "./pages/Impressum";
+
+/**
+ * Root App Component
+ * - Provides global Snackbar notifications
+ * - Defines client-side routes using React Router
+ */
 function App() {
   return (
     <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
       <Routes>
-        {/* Main layout wrapper */}
+        {/* Main layout containing nested routes */}
         <Route path="/" element={<Layout />}>
-          {/* Nested pages */}
+          {/* Homepage */}
           <Route index element={<HomePage />} />
 
-          {/* <Route path="rentings" element={<Renting />} /> */}
+          {/* Admin panel to manage storage units */}
           <Route path="admin" element={<AdminPage />} />
 
-          {/* <Route path="user" element={<User />} /> */}
+          {/* User management interface */}
           <Route path="user" element={<UserPage />} />
 
-          {/* <Route path="rentings" element={<User />} /> */}
+          {/* Rentings management interface */}
           <Route path="rentings" element={<RentingPage />} />
 
-          {/* <Route path="user" element={<User />} /> */}
+          {/* Static Impressum page */}
           <Route path="impressum" element={<Impressum />} />
         </Route>
       </Routes>

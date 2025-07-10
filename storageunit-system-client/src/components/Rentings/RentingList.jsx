@@ -41,14 +41,8 @@ export default function RentingList({ rentings, onEdit, onDelete }) {
 
                   {/* Delete button triggers delete callback with confirmation */}
                   <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to delete this renting?"
-                        )
-                      ) {
+                    onClick={() => {                    
                         onDelete(renting.id);
-                      }
                     }}
                   >
                     Delete

@@ -1,70 +1,66 @@
 import { useState, useEffect } from "react";
 import StorageUnitListAdmin from "../components/StorageUnit/StorageUnitListAdmin";
 import StorageUnitForm from "../components/StorageUnit/StorageUnitForm";
-import * as api from "../api/api"; // API methods for storage units
+import * as api from "../api/api";
 
 /**
- * AdminPage: Top‑level page for creating, editing, and deleting storage units.
- * It holds the list of units in state, shows/hides the form, and passes
- * data + callbacks down to child components.
+ * AdminPage
+ * - Manages CRUD operations for storage units
+ * - Displays a list and handles create/edit/delete through the form
  */
 export default function AdminPage() {
-  // Which unit is currently being edited (null = new unit)
-  const [editingUnit, setEditingUnit] = useState(null);
 
-  // Full list of storage units fetched from the backend
-  const [units, setUnits] = useState([]);
+    // Currently selected units for editing
+  const [editingUnit, setEditingUnit] = useState(null); 
 
-  // Whether the create/edit form is visible
+  // List of all rentings from the backend
+  const [units, setUnits] = useState([]); 
+
+  // Show/hide form
   const [showForm, setShowForm] = useState(false);
 
-  /** Fetch all storage units from the API and store in state */
-  async function fetchUnits() {
+  /** Fetch storage units from backend */
+  const fetchUnits = async () => {
     try {
       const res = await api.fetchStorageUnits(); // GET /storageunits
-      setUnits(res.data); // Save array of units
+      setUnits(res.data);
     } catch (e) {
       console.error("Failed to load units:", e);
     }
-  }
+  };
 
-  // Load units on first render
+  // Load units when component mounts
   useEffect(() => {
     fetchUnits();
   }, []);
 
-  /** Called after create/update/delete to reload the list */
-  const handleRefresh = () => {
-    fetchUnits();
-  };
+  // Refresh the list after update/create/delete
+  const handleRefresh = () => fetchUnits();
 
-  /** Open form in “edit” mode for the given unit */
+  // Open form to edit an existing unit
   const handleEdit = (unit) => {
     setEditingUnit(unit);
     setShowForm(true);
   };
 
-  /** Open form in “create new” mode */
+  // Open form to create a new unit
   const handleAddNew = () => {
-    setEditingUnit(null);
+    setEditingUnit();
     setShowForm(true);
   };
 
-  /** Close the form (either cancel or after save) */
+  // Close the form
   const handleCloseForm = () => {
-    setShowForm(false);
     setEditingUnit(null);
+    setShowForm(false);
   };
 
-  /**
-   * Delete the given unit by ID, then refresh the list.
-   * Prompts the user for confirmation first.
-   */
+  // Delete a unit after confirmation
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this storage unit?")) return;
     try {
       await api.deleteStorageUnit(id); // DELETE /storageunits/{id}
-      fetchUnits(); // Refresh list
+      fetchUnits();
     } catch (e) {
       console.error("Failed to delete unit:", e);
     }
@@ -77,22 +73,22 @@ export default function AdminPage() {
       {/* Button to create a new unit */}
       <button onClick={handleAddNew}>+ Add Storage Unit</button>
 
-      {/* Conditionally show the form when needed */}
+      {/* Conditionally render the create/edit form */}
       {showForm && (
         <StorageUnitForm
-          editingUnit={editingUnit} // The unit to edit, or null for new
-          onClose={handleCloseForm} // Called to hide the form
-          onSave={handleRefresh} // Called after save to refresh list
+          editingUnit={editingUnit}
+          onClose={handleCloseForm}
+          onSave={handleRefresh}
         />
       )}
 
       <hr />
 
-      {/* The admin list of all units */}
+      {/* List of existing storage units */}
       <StorageUnitListAdmin
-        units={units} // Pass the array of storage units
-        onEdit={handleEdit} // Callback when user clicks “Edit”
-        onDelete={handleDelete} // Callback when user clicks “Delete”
+        units={units}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
       />
     </div>
   );

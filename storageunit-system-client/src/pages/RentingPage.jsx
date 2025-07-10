@@ -3,55 +3,57 @@ import RentingList from "../components/Rentings/RentingList";
 import RentingForm from "../components/Rentings/RentingForm";
 import * as api from "../api/api";
 
-// Main page component for managing rentings
+/**
+ * RentingPage
+ * - Manages rentings: create, edit, delete
+ * - Displays renting form and list side by side
+ */
 export default function RentingPage() {
-  // Track which renting is currently being edited; null means new renting
+  // Currently selected renting for editing
   const [editingRenting, setEditingRenting] = useState(null);
 
-  // State holding the list of all rentings fetched from backend
+  // List of all rentings from the backend
   const [rentings, setRentings] = useState([]);
 
-  // Fetch all rentings from backend API
+  /** Fetch all rentings from API */
   async function fetchRentings() {
     try {
-      const response = await api.fetchRentings(); // API call to get rentings
-      setRentings(response.data); // Update state with fetched rentings
+      const response = await api.fetchRentings();
+      setRentings(response.data);
     } catch (error) {
-      console.error("Failed to fetch rentings:", error); // Log errors
+      console.error("Failed to fetch rentings:", error);
     }
   }
 
-  // Load rentings once on component mount
+  // Fetch rentings on first render
   useEffect(() => {
     fetchRentings();
   }, []);
 
-  // Refresh handler called after create/update/delete to reload rentings
+  /** Refresh list after create/update/delete */
   const handleRefresh = () => {
     fetchRentings();
   };
 
-  // Open form with selected renting for editing
+  /** Open form with selected renting for editing */
   const handleEdit = (renting) => {
     setEditingRenting(renting);
   };
 
-  // Close form, cancel editing or after save
+  /** Close form (after save or cancel) */
   const handleFormClose = () => {
-    setEditingRenting(null);
+    setEditingRenting();
   };
 
-  // Delete renting by id with confirmation and refresh list
+  /** Delete a renting with confirmation, then refresh list */
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this renting?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this renting?")) return;
 
     try {
-      await api.deleteRentings(id); // API call to delete renting
-      handleRefresh(); // Refresh the list after delete
+      await api.deleteRentings(id);
+      handleRefresh();
     } catch (error) {
       console.error("Failed to delete renting:", error);
-      // Optionally notify user here about the error
     }
   };
 
@@ -59,23 +61,22 @@ export default function RentingPage() {
     <div>
       <h1>Renting Management</h1>
 
-      {/* Layout with two side-by-side panels */}
       <div className="two-column-layout">
-        {/* Right panel: renting form for adding or editing */}
+        {/* Right panel: Form to create or edit a renting */}
         <div className="right-panel">
           <RentingForm
-            editingRenting={editingRenting} // Renting being edited, or null
-            onClose={handleFormClose} // Close form callback
-            onSave={handleRefresh} // Refresh list after save
+            editingRenting={editingRenting}
+            onClose={handleFormClose}
+            onSave={handleRefresh}
           />
         </div>
 
-        {/* Left panel: list of rentings */}
+        {/* Left panel: List of existing rentings */}
         <div className="left-panel">
           <RentingList
-            rentings={rentings} // Pass current rentings as prop
-            onEdit={handleEdit} // Edit renting callback
-            onDelete={handleDelete} // Delete renting callback
+            rentings={rentings}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         </div>
       </div>

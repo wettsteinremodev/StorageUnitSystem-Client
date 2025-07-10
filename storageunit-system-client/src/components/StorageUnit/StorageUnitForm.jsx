@@ -1,181 +1,209 @@
 import { useState, useEffect } from "react";
-import * as api from "../../api/api"; // CRUD API methods
-import useNotify from "../Notification/useNotify"; // Toast notifications
+import * as api from "../../api/api";
+import useNotify from "../Notification/useNotify";
 
-/**
- * StorageUnitForm: Handles both creating new units and editing existing ones.
- * Shows inputs for name, size, price, and availability.
- */
-export default function StorageUnitForm({
-  editingUnit,
-  onClose,
-  onSave = () => {},
-}) {
-  // Local state for each form field
-  const [name, setName] = useState("");
-  const [sizeInM2, setSizeInM2] = useState("");
-  const [pricePerMonth, setPricePerMonth] = useState("");
-  const [available, setAvailable] = useState(true);
+export default function RentingForm({ editingRenting, onClose, onSave }) {
+  // Form state variables for user, storage unit, dates
+  const [userId, setUserId] = useState("");
+  const [storageUnitId, setStorageUnitId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  // Error state for client-side validation
+  // Dropdown lists for users and storage units
+  const [users, setUsers] = useState([]);
+  const [storageUnits, setStorageUnits] = useState([]);
+
+  // Tracking Validation ERRORS
   const [errors, setErrors] = useState({});
 
-  const notify = useNotify(); // For user feedback
+  // My Notify Alerts
+  const notify = useNotify();
 
-  /**
-   * Whenever `editingUnit` changes (or first mounts), populate fields if
-   * editing an existing unit, or clear them for a new unit.
-   */
+  // Load users and storage units on component mount
   useEffect(() => {
-    if (editingUnit) {
-      setName(editingUnit.name);
-      setSizeInM2(editingUnit.sizeInM2);
-      setPricePerMonth(editingUnit.pricePerMonth);
-      setAvailable(editingUnit.available);
-    } else {
-      setName("");
-      setSizeInM2("");
-      setPricePerMonth("");
-      setAvailable(true);
-    }
-  }, [editingUnit]);
+    fetchUsers();
+    fetchStorageUnits();
+  }, []);
 
-  /**
-   * Frontend validation aligned with backend (Java) constraints:
-   * - Name: required, length 2–20
-   * - Size: number between 1.0 and 1000.0
-   * - Price: must be > 0
-   */
+  // Populate form fields if editing an existing renting
+  useEffect(() => {
+    if (editingRenting) {
+      setUserId(editingRenting.user.id);
+      setStorageUnitId(editingRenting.storageUnit.id);
+      setStartDate(editingRenting.startDate);
+      setEndDate(editingRenting.endDate);
+    } else {
+      // Reset form fields for new renting
+      setUserId("");
+      setStorageUnitId("");
+      setStartDate("");
+      setEndDate("");
+    }
+  }, [editingRenting]);
+
+  // Fetch users from API
+  async function fetchUsers() {
+    try {
+      const response = await api.fetchUsers();
+      setUsers(response.data);
+    } catch (error) {
+      notify.error("Failed to load users: " + error.message);
+    }
+  }
+
+  // Fetch storage units from API
+  async function fetchStorageUnits() {
+    try {
+      const response = await api.fetchStorageUnits();
+      setStorageUnits(response.data);
+    } catch (error) {
+      notify.error("Failed to load storage units: " + error.message);
+    }
+  }
+
+  // Validation
   function validate() {
     const newErrors = {};
 
-    if (!name) {
-      newErrors.name = "Name is required.";
-    } else if (name.length < 2 || name.length > 20) {
-      newErrors.name = "Name must be between 2 and 20 characters.";
-    }
+    if (!userId) newErrors.userId = "Please select a user.";
+    if (!storageUnitId) newErrors.storageUnitId = "Please select a storage unit.";
+    if (!startDate) newErrors.startDate = "Please enter a start date.";
+    if (!endDate) newErrors.endDate = "Please enter an end date.";
 
-    const size = parseFloat(sizeInM2);
-    if (!sizeInM2 || isNaN(size)) {
-      newErrors.sizeInM2 = "Size is required.";
-    } else if (size < 1.0 || size > 1000.0) {
-      newErrors.sizeInM2 = "Size must be between 1.0 and 1000.0 m².";
-    }
-
-    const price = parseFloat(pricePerMonth);
-    if (!pricePerMonth || isNaN(price)) {
-      newErrors.pricePerMonth = "Price is required.";
-    } else if (price <= 0) {
-      newErrors.pricePerMonth = "Price must be greater than 0.";
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (isNaN(start.getTime())) newErrors.startDate = "Start date is invalid.";
+      if (isNaN(end.getTime())) newErrors.endDate = "End date is invalid.";
+      if (!newErrors.startDate && !newErrors.endDate && start > end) {
+        newErrors.date = "Start date must be before end date.";
+      }
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   }
 
-  /**
-   * Submit handler: calls either create or update API, shows a toast,
-   * then triggers parent callbacks (`onSave`, `onClose`).
-   */
+  // Handle form submission to create or update renting
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!validate()) {
-      notify.info("Please fix the validation errors.");
+    // Basic validation of inputs
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      const errorMessages = Object.values(validationErrors).join("\n");
+      notify.warning("Check:\n" + errorMessages);
       return;
     }
 
-    // Build the payload
-    const data = {
-      name,
-      sizeInM2: parseFloat(sizeInM2),
-      pricePerMonth: parseFloat(pricePerMonth),
-      available,
+    // Construct renting object matching backend format
+    const rentingData = {
+      startDate,
+      endDate,
+      user: { id: Number(userId) },
+      storageUnit: { id: Number(storageUnitId) },
     };
 
     try {
-      if (editingUnit) {
-        // Update existing unit
-        await api.updateStorageUnit(editingUnit.id, data);
-        notify.success("Updated successfully");
+      if (editingRenting) {
+        // Update existing renting
+        await api.updateRentings(editingRenting.id, rentingData);
+        notify.success("Renting updated successfully.");
       } else {
-        // Create new unit
-        await api.createStorageUnit(data);
-        notify.success("Created successfully");
+        // Create new renting
+        await api.createRentings(rentingData);
+        notify.success("Renting created successfully.");
       }
 
-      onSave(); // Refresh list in parent
-      onClose(); // Close the form
-    } catch (err) {
-      // Show backend validation or generic error
-      const msg = err.response?.data
-        ? Object.values(err.response.data).join("\n")
-        : err.message;
-      notify.error(msg);
+      if (typeof onSave === "function") {
+        onSave(); // Trigger parent refresh
+      }
+
+      onClose(); // Trigger parent component to close form
+    } catch (error) {
+      if (error.response && error.response.data) {
+        const errors = error.response.data;
+        const errorMessages = Object.values(errors).join("\n");
+        notify.error(errorMessages);
+      } else {
+        notify.error("Error saving renting: " + error.message);
+      }
     }
   }
 
   return (
-    <form className="storage-unit-form" onSubmit={handleSubmit}>
-      <h2>{editingUnit ? "Edit Storage Unit" : "Add New Storage Unit"}</h2>
+    <div>
+      <h2>{editingRenting ? "Edit Renting" : "Add New Renting"}</h2>
 
-      {/* Name input */}
-      <label>
-        Name:
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        {errors.name && <p className="form-error">{errors.name}</p>}
-      </label>
+      <form className="storage-unit-form" onSubmit={handleSubmit}>
+        <div>
+          <label>
+            User:
+            <select value={userId} onChange={(e) => setUserId(e.target.value)}>
+              <option value="">Select user</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.userName}
+                </option>
+              ))}
+            </select>
+          </label>
+          {errors.userId && <p className="form-error">{errors.userId}</p>}
+        </div>
 
-      {/* Size input */}
-      <label>
-        Size (m²):
-        <input
-          type="number"
-          step="0.1"
-          value={sizeInM2}
-          onChange={(e) => setSizeInM2(e.target.value)}
-          required
-        />
-        {errors.sizeInM2 && <p className="form-error">{errors.sizeInM2}</p>}
-      </label>
+        <div>
+          <label>
+            Storage Unit:
+            <select
+              value={storageUnitId}
+              onChange={(e) => setStorageUnitId(e.target.value)}
+            >
+              <option value="">Select storage unit</option>
+              {storageUnits
+                .filter((unit) => unit.available)
+                .map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.name} ({unit.sizeInM2} m²) - ${unit.pricePerMonth}
+                  </option>
+                ))}
+            </select>
+          </label>
+          {errors.storageUnitId && (
+            <p className="form-error">{errors.storageUnitId}</p>
+          )}
+        </div>
 
-      {/* Price input */}
-      <label>
-        Price per Month:
-        <input
-          type="number"
-          step="0.01"
-          value={pricePerMonth}
-          onChange={(e) => setPricePerMonth(e.target.value)}
-          required
-        />
-        {errors.pricePerMonth && (
-          <p className="form-error">{errors.pricePerMonth}</p>
-        )}
-      </label>
+        <div>
+          <label>
+            Start Date:
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </label>
+          {errors.startDate && <p className="form-error">{errors.startDate}</p>}
+        </div>
 
-      {/* Availability toggle */}
-      <label>
-        Available:
-        <input
-          type="checkbox"
-          checked={available}
-          onChange={(e) => setAvailable(e.target.checked)}
-        />
-      </label>
+        <div>
+          <label>
+            End Date:
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </label>
+          {errors.endDate && <p className="form-error">{errors.endDate}</p>}
+        </div>
 
-      {/* Action buttons */}
-      <div className="buttons">
-        <button type="submit">{editingUnit ? "Update" : "Create"}</button>
+        {errors.date && <p className="form-error">{errors.date}</p>}
+
+        <button type="submit">{editingRenting ? "Update" : "Create"}</button>
         <button type="button" onClick={onClose}>
           Cancel
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }

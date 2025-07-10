@@ -65,23 +65,22 @@ export default function RentingForm({ editingRenting, onClose, onSave }) {
   function validate() {
     const newErrors = {};
 
-    if (!userId) newErrors.userId = "User is required.";
-    if (!storageUnitId) newErrors.storageUnitId = "Storage unit is required.";
-    if (!startDate) newErrors.startDate = "Start date is required.";
-    if (!endDate) newErrors.endDate = "End date is required.";
+    if (!userId) newErrors.userId = "Please select a user.";
+    if (!storageUnitId) newErrors.storageUnitId = "Please select a storage unit.";
+    if (!startDate) newErrors.startDate = "Please enter a start date.";
+    if (!endDate) newErrors.endDate = "Please enter an end date.";
 
     if (startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        newErrors.date = "Invalid date format.";
-      } else if (start > end) {
+      if (isNaN(start.getTime())) newErrors.startDate = "Start date is invalid.";
+      if (isNaN(end.getTime())) newErrors.endDate = "End date is invalid.";
+      if (!newErrors.startDate && !newErrors.endDate && start > end) {
         newErrors.date = "Start date must be before end date.";
       }
     }
-
     setErrors(newErrors);
-    return newErrors; // ✅ Return the error object itself
+    return newErrors; 
   }
 
   // Handle form submission to create or update renting
@@ -92,7 +91,7 @@ export default function RentingForm({ editingRenting, onClose, onSave }) {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       const errorMessages = Object.values(validationErrors).join("\n");
-      notify.info("Please fix the validation errors:\n" + errorMessages);
+      notify.warning("Check:\n" + errorMessages);
       return;
     }
 

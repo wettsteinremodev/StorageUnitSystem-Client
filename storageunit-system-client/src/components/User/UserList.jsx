@@ -4,7 +4,7 @@ import useNotify from "../Notification/useNotify";
 export default function UserList({ users, onEdit, onDelete }) {
   const notify = useNotify();
 
-  // This is a controlled component: receives users and callbacks as props
+
 
   return (
     <div>
@@ -32,20 +32,8 @@ export default function UserList({ users, onEdit, onDelete }) {
                   {/* Edit button calls onEdit with selected user */}
                   <button onClick={() => onEdit(user)}>Edit</button>
 
-                  {/* Delete button calls onDelete with user id, with confirmation */}
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to delete this user?"
-                        )
-                      ) {
-                        onDelete(user.id);
-                      }
-                    }}
-                  >
-                    Delete
-                  </button>
+                  {/* Delete button calls local handler that confirms and tries delete */}
+                  <button onClick={() => onDelete(user.id)}>Delete</button>
                 </td>
               </tr>
             ))}
